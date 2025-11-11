@@ -1,4 +1,5 @@
 import { sendWelcomeEmail } from "../emails/emailHandlers.js";
+import cloudinary from "../lib/cloudinary.js";
 import { ENV } from "../lib/env.js";
 import { generateToken } from "../lib/utils.js";
 import User from "../models/User.js"
@@ -81,11 +82,32 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         console.error("Error login controller: ", error)
-        res.sttus(500).json({message: "Intenal server error"})
+        res.sttus(500).json({ message: "Intenal server error" })
     }
 }
 
 export const logout = async (_, res) => {
-    res.cookie("jwt", "", {maxAge: 0})
-    res.status(200).json({ message: "Logged out successfuly"})
+    res.cookie("jwt", "", { maxAge: 0 })
+    res.status(200).json({ message: "Logged out successfuly" })
+}
+
+export const updateProfile = async (req, res) => {
+    try {
+        const { profilePic } = req.body;
+        if (!profilePic) return res.status(400).json({ message: "Profile pic is required" });
+
+        const userId = req.user._id;
+
+        const uploadResponse = await cloudinary.uploader.upload(profilePic)
+
+        const updateUser = await User.findByIdAndUpdate(userId,
+            { profilePic: uploadResponse.secure_url },
+            { new: true })
+
+        res.status(200).json(updateUser);
+
+    } catch (error) {
+        console.log("Error updating profile", error)
+        res.sttus(500).json({ message: "Intenal server error" })
+    }
 }
