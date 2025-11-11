@@ -64,6 +64,9 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
     const { email, password } = req.body
 
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" })
+    }
     try {
         const user = await User.findOne({ email })
         if (!user) return res.status(400).json({ message: "Invalid Credentials" })
@@ -81,11 +84,11 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         console.error("Error login controller: ", error)
-        res.sttus(500).json({message: "Intenal server error"})
+        res.sttus(500).json({ message: "Intenal server error" })
     }
 }
 
 export const logout = async (_, res) => {
-    res.cookie("jwt", "", {maxAge: 0})
-    res.status(200).json({ message: "Logged out successfuly"})
+    res.cookie("jwt", "", { maxAge: 0 })
+    res.status(200).json({ message: "Logged out successfuly" })
 }
