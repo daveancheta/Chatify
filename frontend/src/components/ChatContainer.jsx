@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { use, useEffect, useRef } from 'react'
 import { useChatStore } from '../store/useChatStore'
 import { useAuthStore } from '../store/useAuthStore';
 import ChatHeader from './ChatHeader';
@@ -9,10 +9,17 @@ import MessagesLoadingSkeleton from './MessageLoadingSkeleton';
 function ChatContainer() {
   const { selectedUser, getMessagesByUserId, messages, isMessagesLoading } = useChatStore();
   const { authUser } = useAuthStore();
+  const messsageEndRef = useRef(null);
 
   useEffect(() => {
     getMessagesByUserId(selectedUser._id)
   }, [getMessagesByUserId, selectedUser])
+
+  useEffect(() => {
+    if(messsageEndRef.current) {
+      messsageEndRef.current.scrollIntoView({ behavior: "smooth" });  
+    }
+  })
   return (
     <>
       <ChatHeader />
@@ -30,10 +37,16 @@ function ChatContainer() {
                   {msg.image && <img src={msg.image} alt=""  className='m-2'/>}
                   {msg.text && <p className='m-2'>{msg.text}</p>
                  }
-                  <p className='m-2 text-xs opacity-75'>{new Date(msg.createdAt).toISOString().slice(11, 16)}</p>
+                  <p className='m-2 text-xs opacity-75'>
+                    {new Date(msg.createdAt).toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                    </p>
                 </div>
               </div>
             ))}
+            <div ref={messsageEndRef}/>
           </div>
           : isMessagesLoading ? <MessagesLoadingSkeleton/> :
           <NoChatHistoryPlaceholder name={selectedUser.fullname} />}
