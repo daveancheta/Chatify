@@ -4,22 +4,21 @@ import { axiosInstance } from '../lib/axios'
 
 export const useChatStore = create((set, get) => ({
     allContacts: [],
-    chat: [],
+    chats: [],
     messages: [],
     activeTab: "chats",
     selectedUser: null,
     isUserLoading: false,
     isMessagesLoading: false,
-    isSoundEnabled: localStorage.getItem("isSoundEnabled") === true,
-
+    isSoundEnabled: JSON.parse(localStorage.getItem("isSoundEnabled")) === true,
 
     toggleSound: () => {
         localStorage.setItem("isSoundEnabled", !get().isSoundEnabled)
-        set("isSoundEnabled", !get().isSoundEnabled)
+        set({ isSoundEnabled: !get().isSoundEnabled })
     },
 
-    setActiveTAb: (tab) => set({ activeTab: tab }),
-    setSelectUser: (selectUser) => set({ selectUser }),
+    setActiveTab: (tab) => set({ activeTab: tab }),
+    setSelectedUser: (selectUser) => set({ selectedUser: selectUser }),
 
     getAllContacts: async () => {
         set({ isUserLoading: true })
@@ -37,9 +36,9 @@ export const useChatStore = create((set, get) => ({
         set({ isUserLoading: true })
         try {
             const res = await axiosInstance.get("/messages/chats")
-            set({ allContacts: res.data })
+            set({ chats: res.data })
         } catch (error) {
-            toast.error(error.response.data.message)
+            console.log(error)
         } finally {
             set({ isUserLoading: false })
         }
