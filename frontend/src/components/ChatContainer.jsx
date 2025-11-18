@@ -7,19 +7,25 @@ import MessageInput from './MessageInput';
 import MessagesLoadingSkeleton from './MessageLoadingSkeleton';
 
 function ChatContainer() {
-  const { selectedUser, getMessagesByUserId, messages, isMessagesLoading } = useChatStore();
+  const { selectedUser, getMessagesByUserId, messages, isMessagesLoading,
+    subscribeToMessages, unsubscribeFromMessages } = useChatStore();
   const { authUser } = useAuthStore();
   const messsageEndRef = useRef(null);
 
   useEffect(() => {
-    getMessagesByUserId(selectedUser._id)
-  }, [getMessagesByUserId, selectedUser])
+    getMessagesByUserId(selectedUser._id);
+    subscribeToMessages();
+    
+    return () => unsubscribeFromMessages();
+  }, [getMessagesByUserId, selectedUser,
+    subscribeToMessages, unsubscribeFromMessages])
 
   useEffect(() => {
-    if(messsageEndRef.current) {
-      messsageEndRef.current.scrollIntoView({ behavior: "smooth" });  
+    if (messsageEndRef.current) {
+      messsageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   })
+
   return (
     <>
       <ChatHeader />
@@ -34,25 +40,25 @@ function ChatContainer() {
                 <div className={`chat-bubble relative 
                   ${msg.senderId === authUser._id ?
                     'bg-cyan-600 textwhite' : 'bg-slate-800 text-slate-200'}`}>
-                  {msg.image && <img src={msg.image} alt=""  className='m-2'/>}
+                  {msg.image && <img src={msg.image} alt="" className='m-2' />}
                   {msg.text && <p className='m-2'>{msg.text}</p>
-                 }
+                  }
                   <p className='m-2 text-xs opacity-75'>
                     {new Date(msg.createdAt).toLocaleTimeString(undefined, {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
-                    </p>
+                  </p>
                 </div>
               </div>
             ))}
-            <div ref={messsageEndRef}/>
+            <div ref={messsageEndRef} />
           </div>
-          : isMessagesLoading ? <MessagesLoadingSkeleton/> :
-          <NoChatHistoryPlaceholder name={selectedUser.fullname} />}
+          : isMessagesLoading ? <MessagesLoadingSkeleton /> :
+            <NoChatHistoryPlaceholder name={selectedUser.fullname} />}
       </div>
 
-      <MessageInput/>
+      <MessageInput />
     </>
   )
 }

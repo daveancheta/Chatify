@@ -1,6 +1,8 @@
 import cloudinary from "../lib/cloudinary.js";
 import User from "../models/User.js";
 import Message from "../models/Message.js"
+import { get } from "mongoose";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 
 export const getAllContacts = async (req, res) => {
     try {
@@ -14,7 +16,7 @@ export const getAllContacts = async (req, res) => {
     }
 }
 
-export const getMessagesByUSerId = async (req, res) => {
+export const getMessagesByUserId = async (req, res) => {
     try {
         const myId = req.user._id;
         const { id: userToChatId } = req.params;
@@ -65,6 +67,11 @@ export const sendMessage = async (req, res) => {
         });
 
         await newMessage.save();
+
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("newMessage", newMessage);
+        }
 
         res.status(201).json(newMessage);
 
